@@ -1,5 +1,5 @@
 -- =============================================
---  AZIC HUB V4.0 - KOMPLETT MIT CONFIG
+--  AZIC HUB V4.0 - KOMPLETT
 -- =============================================
 
 local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/main/dist/main.lua"))()
@@ -78,15 +78,6 @@ local CustomTeamPlayers = {}
 -- ===== SKY =====
 local CurrentSkyType = "Default"
 
--- ===== NEUE FEATURES =====
-local SizeChangerEnabled = false
-local SizeValue = 1
-local WaterWalkEnabled = false
-local KeySpamEnabled = false
-local KeySpamKey = "W"
-local KeySpamDelay = 0.1
-local SelectedTeleportPlayer = nil
-
 -- ESP
 local ESPBoxes = {}
 local ESPNames = {}
@@ -95,14 +86,11 @@ local Tracers = {}
 local Chams = {}
 local ESPColor = Color3.fromRGB(255, 0, 0)
 
--- ===== CONFIG =====
-local ConfigName = "AzicHubConfig"
-
 -- ===== WINDOW =====
 local Window = WindUI:CreateWindow({
-    Title = "Azic Hub",
+    Title = "BS",
     Icon = "cool",
-    Author = "by BROS GANG",
+    Author = "by BS STUDIO",
     Folder = "AZIC",
     Size = UDim2.fromOffset(620, 550),
     Transparent = true,
@@ -152,7 +140,6 @@ local MiscTab = Window:Tab({Title = "Misc", Icon = "🔍"})
 local PlayerTab = Window:Tab({Title = "Player", Icon = "user"})
 local FarmTab = Window:Tab({Title = "Farm", Icon = "zap"})
 local GraphicsTab = Window:Tab({Title = "Graphics", Icon = "✨"})
-local ConfigTab = Window:Tab({Title = "Config", Icon = "💾"})
 
 -- ===== FOV CIRCLE =====
 local Circle = Drawing.new("Circle")
@@ -437,142 +424,6 @@ local function AutoCollect()
     end
 end
 
--- ===== WATER WALK =====
-local waterWalkConnection
-local function SetupWaterWalk()
-    if waterWalkConnection then
-        waterWalkConnection:Disconnect()
-        waterWalkConnection = nil
-    end
-    
-    if not WaterWalkEnabled then return end
-    
-    waterWalkConnection = RunService.Heartbeat:Connect(function()
-        local character = LocalPlayer.Character
-        if not character then return end
-        
-        local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
-        if not humanoidRootPart then return end
-        
-        local raycastParams = RaycastParams.new()
-        raycastParams.FilterDescendantsInstances = {character}
-        raycastParams.IgnoreWater = false
-        
-        local rayOrigin = humanoidRootPart.Position
-        local rayDirection = Vector3.new(0, -5, 0)
-        local rayResult = workspace:Raycast(rayOrigin, rayDirection, raycastParams)
-        
-        if rayResult then
-            local hitPart = rayResult.Instance
-            if hitPart and hitPart:IsA("BasePart") and hitPart.Material == Enum.Material.Water then
-                local newPosition = Vector3.new(
-                    humanoidRootPart.Position.X,
-                    rayResult.Position.Y + 1.5,
-                    humanoidRootPart.Position.Z
-                )
-                humanoidRootPart.Position = newPosition
-            end
-        end
-    end)
-end
-
--- ===== SIZE CHANGER =====
-local sizeConnection
-local function ApplySize()
-    if sizeConnection then
-        sizeConnection:Disconnect()
-        sizeConnection = nil
-    end
-    
-    if not SizeChangerEnabled then
-        local character = LocalPlayer.Character
-        if character then
-            for _, part in pairs(character:GetDescendants()) do
-                if part:IsA("BasePart") then
-                    local origSize = part:GetAttribute("OriginalSize")
-                    if origSize then
-                        part.Size = part.Size / (SizeValue / origSize)
-                        part:SetAttribute("OriginalSize", nil)
-                    end
-                end
-            end
-        end
-        return
-    end
-    
-    sizeConnection = RunService.Heartbeat:Connect(function()
-        local character = LocalPlayer.Character
-        if not character then return end
-        
-        for _, part in pairs(character:GetDescendants()) do
-            if part:IsA("BasePart") then
-                local origSize = part:GetAttribute("OriginalSize")
-                if not origSize then
-                    part:SetAttribute("OriginalSize", part.Size.X)
-                    origSize = part.Size.X
-                end
-                local scale = SizeValue / origSize
-                part.Size = part.Size * scale
-                part:SetAttribute("OriginalSize", SizeValue)
-            end
-        end
-    end)
-end
-
--- ===== TELEPORT TO PLAYER =====
-local function TeleportToPlayer(targetUsername)
-    local targetPlayer = nil
-    for _, player in pairs(Players:GetPlayers()) do
-        if string.lower(player.Name) == string.lower(targetUsername) then
-            targetPlayer = player
-            break
-        end
-    end
-    
-    if not targetPlayer then
-        WindUI:Notify({Title = "Teleport", Content = "Spieler nicht gefunden!", Duration = 3})
-        return
-    end
-    
-    local targetChar = targetPlayer.Character
-    if not targetChar or not targetChar:FindFirstChild("HumanoidRootPart") then
-        WindUI:Notify({Title = "Teleport", Content = "Charakter nicht gefunden!", Duration = 3})
-        return
-    end
-    
-    local localChar = LocalPlayer.Character
-    if not localChar or not localChar:FindFirstChild("HumanoidRootPart") then
-        WindUI:Notify({Title = "Teleport", Content = "Du hast keinen Charakter!", Duration = 3})
-        return
-    end
-    
-    localChar.HumanoidRootPart.CFrame = targetChar.HumanoidRootPart.CFrame
-    WindUI:Notify({Title = "Teleport", Content = "Zu " .. targetPlayer.Name .. " teleportiert!", Duration = 3})
-end
-
--- ===== KEY SPAM (STEURUNG) =====
-local keySpamConnection
-local keySpamKeys = {}
-
-local function SetupKeySpam()
-    if keySpamConnection then
-        keySpamConnection:Disconnect()
-        keySpamConnection = nil
-    end
-    
-    if not KeySpamEnabled then return end
-    
-    keySpamConnection = RunService.Heartbeat:Connect(function()
-        local key = KeySpamKey
-        local keyCode = Enum.KeyCode[key]
-        if keyCode then
-            VirtualInputManager:SendKeyEvent(true, keyCode, false, game)
-            task.wait(KeySpamDelay)
-            VirtualInputManager:SendKeyEvent(false, keyCode, false, game)
-        end
-    end)
-end
-
 -- ===== GHOST MODE =====
 local ghostConnections = {}
 local ghostParts = {}
@@ -629,12 +480,9 @@ local function ApplyGhostMode()
     table.insert(ghostConnections, conn)
 end
 
--- ===== TRAILS (GEFIXT) =====
+-- ===== TRAILS =====
 local function ApplyTrails()
-    -- Alte Trails löschen
-    for _, trail in pairs(ghostTrails) do
-        pcall(function() trail:Destroy() end)
-    end
+    for _, trail in pairs(ghostTrails) do trail:Destroy() end
     ghostTrails = {}
     
     if not GhostTrailEnabled then return end
@@ -642,13 +490,8 @@ local function ApplyTrails()
     local character = LocalPlayer.Character
     if not character then return end
     
-    -- Auf alle Parts anwenden
     for _, part in pairs(character:GetDescendants()) do
         if part:IsA("BasePart") then
-            -- Prüfen ob schon ein Trail existiert
-            local existingTrail = part:FindFirstChild("GhostTrail")
-            if existingTrail then existingTrail:Destroy() end
-            
             local trail = Instance.new("Trail")
             trail.Name = "GhostTrail"
             trail.Color = ColorSequence.new(GhostNeonColor)
@@ -665,12 +508,9 @@ local function ApplyTrails()
     end
 end
 
--- ===== PARTICLES (REDUZIERT) =====
+-- ===== PARTICLES =====
 local function ApplyParticles()
-    -- Alte Particles löschen
-    for _, particle in pairs(ghostParticles) do
-        pcall(function() particle:Destroy() end)
-    end
+    for _, particle in pairs(ghostParticles) do particle:Destroy() end
     ghostParticles = {}
     
     if not GhostParticlesEnabled then return end
@@ -680,25 +520,21 @@ local function ApplyParticles()
     
     for _, part in pairs(character:GetDescendants()) do
         if part:IsA("BasePart") then
-            -- Prüfen ob schon Particles existieren
-            local existingParticles = part:FindFirstChild("GhostParticles")
-            if existingParticles then existingParticles:Destroy() end
-            
             local particles = Instance.new("ParticleEmitter")
             particles.Name = "GhostParticles"
             particles.Color = ColorSequence.new(GhostNeonColor)
             particles.Size = NumberSequence.new({
-                NumberSequenceKeypoint.new(0, 1.5),
-                NumberSequenceKeypoint.new(1, 0.3)
+                NumberSequenceKeypoint.new(0, 2),
+                NumberSequenceKeypoint.new(1, 0.5)
             })
             particles.Transparency = NumberSequence.new({
-                NumberSequenceKeypoint.new(0, 0.7),
+                NumberSequenceKeypoint.new(0, 0.8),
                 NumberSequenceKeypoint.new(1, 0)
             })
-            particles.Rate = 15  -- REDUZIERT
-            particles.Lifetime = NumberRange.new(0.3, 0.8)  -- REDUZIERT
-            particles.SpreadAngle = Vector2.new(180, 180)
-            particles.VelocityInheritance = 0.2
+            particles.Rate = 30
+            particles.Lifetime = NumberRange.new(0.5, 1.5)
+            particles.SpreadAngle = Vector2.new(360, 360)
+            particles.VelocityInheritance = 0.3
             particles.Texture = "rbxassetid://6444320592"
             particles.Parent = part
             table.insert(ghostParticles, particles)
@@ -746,7 +582,7 @@ local function CopySkin(targetUsername)
     local targetPlayer = nil
     for _, player in pairs(Players:GetPlayers()) do
         if string.lower(player.Name) == string.lower(targetUsername) then
-            targetPlayer = player
+                        targetPlayer = player
             break
         end
     end
@@ -794,169 +630,8 @@ local function CopySkin(targetUsername)
     WindUI:Notify({Title = "Skin Changer", Content = "Kompletter Skin von " .. targetUsername .. " kopiert!", Duration = 3})
 end
 
--- ===== CONFIG SYSTEM =====
-local function SaveConfig()
-    local config = {
-        Aimlock = Aimlock,
-        FOV = FOV,
-        TargetPart = TargetPart,
-        Smoothness = Smoothness,
-        AimSpeed = AimSpeed,
-        MaxTargets = MaxTargets,
-        AimKey = tostring(AimKey),
-        ESPEnabled = ESPEnabled,
-        TracersEnabled = TracersEnabled,
-        BoxESPEnabled = BoxESPEnabled,
-        NameESPEnabled = NameESPEnabled,
-        HealthESPEnabled = HealthESPEnabled,
-        TeamCheckEnabled = TeamCheckEnabled,
-        WallCheckEnabled = WallCheckEnabled,
-        TriggerBotEnabled = TriggerBotEnabled,
-        TriggerBotDelay = TriggerBotDelay,
-        PredictionEnabled = PredictionEnabled,
-        PredictionAmount = PredictionAmount,
-        FOVVisible = FOVVisible,
-        ChamsEnabled = ChamsEnabled,
-        AimAssistEnabled = AimAssistEnabled,
-        AimAssistStrength = AimAssistStrength,
-        NoRecoilEnabled = NoRecoilEnabled,
-        FOVCircleFilled = FOVCircleFilled,
-        SpinbotEnabled = SpinbotEnabled,
-        SpinbotSpeed = SpinbotSpeed,
-        AntiAimEnabled = AntiAimEnabled,
-        AntiAimPitch = AntiAimPitch,
-        WalkspeedEnabled = WalkspeedEnabled,
-        WalkspeedValue = WalkspeedValue,
-        JumpPowerEnabled = JumpPowerEnabled,
-        JumpPowerValue = JumpPowerValue,
-        NoclipEnabled = NoclipEnabled,
-        InfiniteJumpEnabled = InfiniteJumpEnabled,
-        GodModeEnabled = GodModeEnabled,
-        ESPColor = {ESPColor.R, ESPColor.G, ESPColor.B},
-        GhostModeEnabled = GhostModeEnabled,
-        GhostNeonColor = {GhostNeonColor.R, GhostNeonColor.G, GhostNeonColor.B},
-        GhostTrailEnabled = GhostTrailEnabled,
-        GhostParticlesEnabled = GhostParticlesEnabled,
-        RainbowEnabled = RainbowEnabled,
-        RainbowSpeed = RainbowSpeed,
-        WaterWalkEnabled = WaterWalkEnabled,
-        SizeChangerEnabled = SizeChangerEnabled,
-        SizeValue = SizeValue,
-        KeySpamEnabled = KeySpamEnabled,
-        KeySpamKey = KeySpamKey,
-        KeySpamDelay = KeySpamDelay,
-        CustomTeamPlayers = {},
-        AimbotFOVColor = {AimbotFOVColor.R, AimbotFOVColor.G, AimbotFOVColor.B}
-    }
-    
-    for _, player in pairs(CustomTeamPlayers) do
-        table.insert(config.CustomTeamPlayers, player.Name)
-    end
-    
-    local json = HttpService:JSONEncode(config)
-    writefile(ConfigName .. ".json", json)
-    WindUI:Notify({Title = "Config", Content = "Config saved!", Duration = 2})
-end
-
-local function LoadConfig()
-    local success, data = pcall(function()
-        return readfile(ConfigName .. ".json")
-    end)
-    
-    if not success then
-        WindUI:Notify({Title = "Config", Content = "No config found!", Duration = 2})
-        return
-    end
-    
-    local config = HttpService:JSONDecode(data)
-    
-    Aimlock = config.Aimlock or false
-    FOV = config.FOV or 120
-    TargetPart = config.TargetPart or "Head"
-    Smoothness = config.Smoothness or 0.1
-    AimSpeed = config.AimSpeed or 50
-    MaxTargets = config.MaxTargets or 5
-    AimKey = Enum.KeyCode[config.AimKey] or Enum.KeyCode.E
-    ESPEnabled = config.ESPEnabled or false
-    TracersEnabled = config.TracersEnabled or false
-    BoxESPEnabled = config.BoxESPEnabled or false
-    NameESPEnabled = config.NameESPEnabled or false
-    HealthESPEnabled = config.HealthESPEnabled or false
-    TeamCheckEnabled = config.TeamCheckEnabled or true
-    WallCheckEnabled = config.WallCheckEnabled or true
-    TriggerBotEnabled = config.TriggerBotEnabled or false
-    TriggerBotDelay = config.TriggerBotDelay or 0.001
-    PredictionEnabled = config.PredictionEnabled or false
-    PredictionAmount = config.PredictionAmount or 0.165
-    FOVVisible = config.FOVVisible or true
-    ChamsEnabled = config.ChamsEnabled or false
-    AimAssistEnabled = config.AimAssistEnabled or false
-    AimAssistStrength = config.AimAssistStrength or 0.3
-    NoRecoilEnabled = config.NoRecoilEnabled or false
-    FOVCircleFilled = config.FOVCircleFilled or false
-    SpinbotEnabled = config.SpinbotEnabled or false
-    SpinbotSpeed = config.SpinbotSpeed or 50
-    AntiAimEnabled = config.AntiAimEnabled or false
-    AntiAimPitch = config.AntiAimPitch or 90
-    WalkspeedEnabled = config.WalkspeedEnabled or false
-    WalkspeedValue = config.WalkspeedValue or 16
-    JumpPowerEnabled = config.JumpPowerEnabled or false
-    JumpPowerValue = config.JumpPowerValue or 50
-    NoclipEnabled = config.NoclipEnabled or false
-    InfiniteJumpEnabled = config.InfiniteJumpEnabled or false
-    GodModeEnabled = config.GodModeEnabled or false
-    GhostModeEnabled = config.GhostModeEnabled or false
-    GhostTrailEnabled = config.GhostTrailEnabled or false
-    GhostParticlesEnabled = config.GhostParticlesEnabled or false
-    RainbowEnabled = config.RainbowEnabled or false
-    RainbowSpeed = config.RainbowSpeed or 2
-    WaterWalkEnabled = config.WaterWalkEnabled or false
-    SizeChangerEnabled = config.SizeChangerEnabled or false
-    SizeValue = config.SizeValue or 1
-    KeySpamEnabled = config.KeySpamEnabled or false
-    KeySpamKey = config.KeySpamKey or "W"
-    KeySpamDelay = config.KeySpamDelay or 0.1
-    
-    if config.ESPColor then
-        ESPColor = Color3.new(config.ESPColor[1], config.ESPColor[2], config.ESPColor[3])
-    end
-    
-    if config.GhostNeonColor then
-        GhostNeonColor = Color3.new(config.GhostNeonColor[1], config.GhostNeonColor[2], config.GhostNeonColor[3])
-    end
-    
-    if config.AimbotFOVColor then
-        AimbotFOVColor = Color3.new(config.AimbotFOVColor[1], config.AimbotFOVColor[2], config.AimbotFOVColor[3])
-    end
-    
-    if config.CustomTeamPlayers then
-        CustomTeamPlayers = {}
-        for _, name in pairs(config.CustomTeamPlayers) do
-            for _, player in pairs(Players:GetPlayers()) do
-                if player.Name == name then
-                    table.insert(CustomTeamPlayers, player)
-                    break
-                end
-            end
-        end
-    end
-    
-    -- Apply settings
-    ApplyGhostMode()
-    ApplyRainbow()
-    SetupWaterWalk()
-    ApplySize()
-    SetupKeySpam()
-    SetupNoclip()
-    UpdateWalkspeed()
-    UpdateJumpPower()
-    
-    WindUI:Notify({Title = "Config", Content = "Config loaded!", Duration = 2})
-end
-
 -- ===== RENDER-LOOP =====
 RunService.RenderStepped:Connect(function()
-
     if Aimlock then
         local Targets = GetTargets()
         if #Targets > 0 then
@@ -1241,60 +916,6 @@ PlayerTab:Toggle({Title = "Noclip", Value = false, Callback = function(v) Noclip
 PlayerTab:Toggle({Title = "Infinite Jump", Value = false, Callback = function(v) InfiniteJumpEnabled = v end})
 PlayerTab:Toggle({Title = "God Mode", Value = false, Callback = function(v) GodModeEnabled = v end})
 
--- SIZE CHANGER (NEU im Player Tab)
-PlayerTab:Toggle({Title = "Size Changer", Value = false, Callback = function(v) 
-    SizeChangerEnabled = v
-    ApplySize()
-end})
-PlayerTab:Slider({Title = "Size Value", Value = {Min = 0.5, Max = 5, Default = 1, Decimals = 1}, Callback = function(v) 
-    SizeValue = v
-    if SizeChangerEnabled then ApplySize() end
-end})
-
--- WATER WALK (NEU im Player Tab)
-PlayerTab:Toggle({Title = "Water Walk", Value = false, Callback = function(v) 
-    WaterWalkEnabled = v
-    SetupWaterWalk()
-end})
-
--- KEY SPAM (NEU im Player Tab)
-PlayerTab:Toggle({Title = "Key Spam (Steuerung)", Value = false, Callback = function(v) 
-    KeySpamEnabled = v
-    SetupKeySpam()
-end})
-PlayerTab:Textbox({Title = "Key (z.B. W, A, S, D)", Value = "W", Callback = function(v) 
-    if v and v ~= "" then
-        KeySpamKey = string.upper(v)
-        if KeySpamEnabled then SetupKeySpam() end
-    end
-end})
-PlayerTab:Slider({Title = "Key Spam Delay", Value = {Min = 0.01, Max = 1, Default = 0.1, Decimals = 2}, Callback = function(v) 
-    KeySpamDelay = v
-    if KeySpamEnabled then SetupKeySpam() end
-end})
-
--- TELEPORT TO PLAYER (NEU im Player Tab)
-local function GetPlayerList()
-    local names = {}
-    for _, player in pairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer then
-            table.insert(names, player.Name)
-        end
-    end
-    return names
-end
-
-PlayerTab:Dropdown({
-    Title = "Teleport to Player",
-    Values = GetPlayerList(),
-    Value = "Select Player",
-    Callback = function(v)
-        if v and v ~= "Select Player" then
-            TeleportToPlayer(v)
-        end
-    end
-})
-
 -- VISUALS TAB
 VisualTab:Colorpicker({Title = "FOV Color", Value = Color3.fromRGB(255, 255, 255), Callback = function(v) AimbotFOVColor = v end})
 VisualTab:Toggle({Title = "No Fog", Value = false, Callback = function(v) if v then Lighting.FogEnd = 100000 else Lighting.FogEnd = 1000 end end})
@@ -1310,7 +931,6 @@ FarmTab:Button({Title = "Farm Once", Callback = function() AutoFarmEnabled = tru
 FarmTab:Button({Title = "Collect Once", Callback = function() AutoCollectEnabled = true; AutoCollect(); AutoCollectEnabled = false; WindUI:Notify({Title = "Collect", Content = "Collect once completed!", Duration = 2}) end})
 
 -- ===== GRAPHICS TAB =====
-
 GraphicsTab:Toggle({Title = "Trail Effect", Value = false, Callback = function(v) 
     GhostTrailEnabled = v
     ApplyTrails()
@@ -1323,11 +943,6 @@ GraphicsTab:Colorpicker({Title = "Trail & Particle Color", Value = Color3.fromRG
     GhostNeonColor = v
     if GhostTrailEnabled then ApplyTrails() end
     if GhostParticlesEnabled then ApplyParticles() end
-end})
-GraphicsTab:Button({Title = "Refresh Trail & Particles", Callback = function()
-    if GhostTrailEnabled then ApplyTrails() end
-    if GhostParticlesEnabled then ApplyParticles() end
-    WindUI:Notify({Title = "Graphics", Content = "Trail & Particles refreshed!", Duration = 2})
 end})
 
 -- ===== MISC TAB =====
@@ -1396,7 +1011,7 @@ MiscTab:Textbox({Title = "Add Player to Team (Username)", Value = "", Callback =
     if v and v ~= "" then
         local found = false
         for _, player in pairs(Players:GetPlayers()) do
-            if string.lower(player.Name) == string.lower(v) then
+                        if string.lower(player.Name) == string.lower(v) then
                 table.insert(CustomTeamPlayers, player)
                 found = true
                 WindUI:Notify({Title = "Team", Content = player.Name .. " added to team!", Duration = 3})
@@ -1448,79 +1063,6 @@ MiscTab:Button({Title = "Unload Script", Callback = function()
     CleanupESP(); Circle:Remove()
     Window:Destroy()
     WindUI:Notify({Title = "Unloaded", Content = "Script unloaded successfully!", Duration = 3})
-end})
-
--- ===== CONFIG TAB =====
-ConfigTab:Button({Title = "Save Config", Callback = function()
-    SaveConfig()
-end})
-ConfigTab:Button({Title = "Load Config", Callback = function()
-    LoadConfig()
-end})
-ConfigTab:Button({Title = "Reset All Settings", Callback = function()
-    -- Reset all variables
-    Aimlock = false
-    FOV = 120
-    TargetPart = "Head"
-    Smoothness = 0.1
-    AimSpeed = 50
-    MaxTargets = 5
-    AimKey = Enum.KeyCode.E
-    ESPEnabled = false
-    TracersEnabled = false
-    BoxESPEnabled = false
-    NameESPEnabled = false
-    HealthESPEnabled = false
-    TeamCheckEnabled = true
-    WallCheckEnabled = true
-    TriggerBotEnabled = false
-    TriggerBotDelay = 0.001
-    PredictionEnabled = false
-    PredictionAmount = 0.165
-    FOVVisible = true
-    ChamsEnabled = false
-    AimAssistEnabled = false
-    AimAssistStrength = 0.3
-    NoRecoilEnabled = false
-    FOVCircleFilled = false
-    SpinbotEnabled = false
-    SpinbotSpeed = 50
-    AntiAimEnabled = false
-    AntiAimPitch = 90
-    WalkspeedEnabled = false
-    WalkspeedValue = 16
-    JumpPowerEnabled = false
-    JumpPowerValue = 50
-    NoclipEnabled = false
-    InfiniteJumpEnabled = false
-    GodModeEnabled = false
-    ESPColor = Color3.fromRGB(255, 0, 0)
-    GhostModeEnabled = false
-    GhostNeonColor = Color3.fromRGB(0, 255, 255)
-    GhostTrailEnabled = false
-    GhostParticlesEnabled = false
-    RainbowEnabled = false
-    RainbowSpeed = 2
-    WaterWalkEnabled = false
-    SizeChangerEnabled = false
-    SizeValue = 1
-    KeySpamEnabled = false
-    KeySpamKey = "W"
-    KeySpamDelay = 0.1
-    CustomTeamPlayers = {}
-    AimbotFOVColor = Color3.fromRGB(255, 255, 255)
-    
-    -- Apply resets
-    ApplyGhostMode()
-    ApplyRainbow()
-    SetupWaterWalk()
-    ApplySize()
-    SetupKeySpam()
-    SetupNoclip()
-    UpdateWalkspeed()
-    UpdateJumpPower()
-    
-    WindUI:Notify({Title = "Config", Content = "All settings reset!", Duration = 3})
 end})
 
 -- ===== START =====
