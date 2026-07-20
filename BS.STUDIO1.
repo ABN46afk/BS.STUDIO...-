@@ -1,5 +1,5 @@
 -- =============================================
---  AZIC HUB V4.0 - KOMPLETT
+--  AZIC HUB V4.0 - GHOST + SKIN + TEAM + GRAPHICS + RAINBOW
 -- =============================================
 
 local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/main/dist/main.lua"))()
@@ -88,9 +88,9 @@ local ESPColor = Color3.fromRGB(255, 0, 0)
 
 -- ===== WINDOW =====
 local Window = WindUI:CreateWindow({
-    Title = "BS",
+    Title = "Azic Hub",
     Icon = "cool",
-    Author = "by BS STUDIO",
+    Author = "by BROS GANG",
     Folder = "AZIC",
     Size = UDim2.fromOffset(620, 550),
     Transparent = true,
@@ -424,7 +424,7 @@ local function AutoCollect()
     end
 end
 
--- ===== GHOST MODE =====
+-- ===== GHOST MODE (NUR GHOST - OHNE AUTOMATISCHE TRAILS/PARTICLES) =====
 local ghostConnections = {}
 local ghostParts = {}
 local ghostTrails = {}
@@ -432,6 +432,7 @@ local ghostParticles = {}
 
 local function ApplyGhostMode()
     if not GhostModeEnabled then
+        -- Alles wieder sichtbar machen
         for _, part in pairs(ghostParts) do
             if part and part:IsA("BasePart") then
                 part.Transparency = 0
@@ -451,10 +452,12 @@ local function ApplyGhostMode()
     local character = LocalPlayer.Character
     if not character then return end
     
+    -- ALLE Parts KOMPLETT unsichtbar machen (Transparency = 1)
     for _, part in pairs(character:GetDescendants()) do
         if part:IsA("BasePart") then
-            part.Transparency = 1
+            part.Transparency = 1  -- KOMPLETT UNSICHTBAR
             
+            -- Neon-Glow (NUR GHOST - keine Trails/Particles)
             local glow = Instance.new("BillboardGui")
             glow.Name = "GhostGlow"
             glow.Size = UDim2.new(0, 50, 0, 50)
@@ -480,8 +483,9 @@ local function ApplyGhostMode()
     table.insert(ghostConnections, conn)
 end
 
--- ===== TRAILS =====
+-- ===== TRAILS (UNABHÄNGIG VON GHOST) =====
 local function ApplyTrails()
+    -- Alte Trails löschen
     for _, trail in pairs(ghostTrails) do trail:Destroy() end
     ghostTrails = {}
     
@@ -508,8 +512,9 @@ local function ApplyTrails()
     end
 end
 
--- ===== PARTICLES =====
+-- ===== PARTICLES (UNABHÄNGIG VON GHOST) =====
 local function ApplyParticles()
+    -- Alte Particles löschen
     for _, particle in pairs(ghostParticles) do particle:Destroy() end
     ghostParticles = {}
     
@@ -551,6 +556,7 @@ local function ApplyRainbow()
     end
     
     if not RainbowEnabled then
+        -- Farbe zurücksetzen
         local character = LocalPlayer.Character
         if character then
             for _, part in pairs(character:GetDescendants()) do
@@ -569,20 +575,21 @@ local function ApplyRainbow()
         local hue = (tick() * RainbowSpeed) % 1
         local color = Color3.fromHSV(hue, 1, 1)
         
-        for _, part in pairs(character:GetDescendants()) do
-            if part:IsA("BasePart") then
-                part.Color = color
+                for _, part in pairs(character:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.Color = color
+                end
             end
-        end
-    end)
+        end)
+    end
 end
 
--- ===== SKIN CHANGER =====
+-- ===== SKIN CHANGER (KOMPLETT) =====
 local function CopySkin(targetUsername)
     local targetPlayer = nil
     for _, player in pairs(Players:GetPlayers()) do
         if string.lower(player.Name) == string.lower(targetUsername) then
-                        targetPlayer = player
+            targetPlayer = player
             break
         end
     end
@@ -599,12 +606,14 @@ local function CopySkin(targetUsername)
         return
     end
     
+    -- ALLES löschen
     for _, child in pairs(localChar:GetChildren()) do
         if child:IsA("Accessory") or child:IsA("Shirt") or child:IsA("Pants") or child:IsA("ShirtGraphic") or child:IsA("Hat") or child:IsA("Clothing") then
             child:Destroy()
         end
     end
     
+    -- Accessoires kopieren
     for _, child in pairs(targetChar:GetChildren()) do
         if child:IsA("Accessory") or child:IsA("Hat") then
             local newAccessory = child:Clone()
@@ -616,16 +625,29 @@ local function CopySkin(targetUsername)
         end
     end
     
+    -- Shirt & Pants kopieren
     local shirt = targetChar:FindFirstChild("Shirt")
     local pants = targetChar:FindFirstChild("Pants")
     local shirtGraphic = targetChar:FindFirstChild("ShirtGraphic")
     
-    if shirt then shirt:Clone().Parent = localChar end
-    if pants then pants:Clone().Parent = localChar end
-    if shirtGraphic then shirtGraphic:Clone().Parent = localChar end
+    if shirt then 
+        local newShirt = shirt:Clone()
+        newShirt.Parent = localChar
+    end
+    if pants then 
+        local newPants = pants:Clone()
+        newPants.Parent = localChar
+    end
+    if shirtGraphic then 
+        local newGraphic = shirtGraphic:Clone()
+        newGraphic.Parent = localChar
+    end
     
+    -- Aussehen aktualisieren
     local humanoid = localChar:FindFirstChild("Humanoid")
-    if humanoid then humanoid:ApplyDescription() end
+    if humanoid then
+        humanoid:ApplyDescription()
+    end
     
     WindUI:Notify({Title = "Skin Changer", Content = "Kompletter Skin von " .. targetUsername .. " kopiert!", Duration = 3})
 end
@@ -946,7 +968,7 @@ GraphicsTab:Colorpicker({Title = "Trail & Particle Color", Value = Color3.fromRG
 end})
 
 -- ===== MISC TAB =====
--- GHOST MODE
+-- GHOST MODE (NUR GHOST)
 MiscTab:Toggle({Title = "Ghost Mode (echt unsichtbar)", Value = false, Callback = function(v) 
     GhostModeEnabled = v
     ApplyGhostMode()
@@ -1011,7 +1033,7 @@ MiscTab:Textbox({Title = "Add Player to Team (Username)", Value = "", Callback =
     if v and v ~= "" then
         local found = false
         for _, player in pairs(Players:GetPlayers()) do
-                        if string.lower(player.Name) == string.lower(v) then
+            if string.lower(player.Name) == string.lower(v) then
                 table.insert(CustomTeamPlayers, player)
                 found = true
                 WindUI:Notify({Title = "Team", Content = player.Name .. " added to team!", Duration = 3})
